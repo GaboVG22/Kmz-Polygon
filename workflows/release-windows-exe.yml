@@ -1,0 +1,56 @@
+name: Build and publish release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release-windows-exe:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Windows executable
+        shell: pwsh
+        run: |
+          python -m PyInstaller `
+            --noconfirm `
+            --clean `
+            --onedir `
+            --name KMZ_3D_Volumenes `
+            --collect-all streamlit `
+            --collect-all pyproj `
+            --collect-all shapely `
+            --collect-data matplotlib `
+            --add-data "app.py;." `
+            --add-data "core.py;." `
+            --add-data "sample_data;sample_data" `
+            streamlit_launcher.py
+
+      - name: Compress executable folder
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/KMZ_3D_Volumenes/*" -DestinationPath "KMZ_3D_Volumenes_Windows.zip" -Force
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: KMZ_3D_Volumenes_Windows.zip
