@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+.streamlit/secrets.toml
+dist/
+build/
+*.spec
+!KMZ_3D_Volumenes.spec
